@@ -20,11 +20,10 @@
 #include <iomanip>
 #include "cppitertools/range.hpp"
 #include "gsl/span"
-#include "debogage_memoire.hpp"        // Ajout des numéros de ligne des "new" dans le rapport de fuites.  Doit être après les include du système, qui peuvent utiliser des "placement new" (non supporté par notre ajout de numéros de lignes).
+#include "debogage_memoire.hpp"        // Ajout des numéros de ligne des "new" dans le rapport de fuites.  Doit être après les include du système, qui peuvent utiliser des "placement new" (non supporté par notre ajout de numéros de lignes
 using namespace std;
 using namespace iter;
 using namespace gsl;
-
 #pragma endregion//}
 
 typedef uint8_t UInt8;
@@ -176,11 +175,17 @@ void ajouterLivresBiblio(string nomFichier, vector<shared_ptr<Item>>& biblio)
 	for (int i = 0; i < lireNbLignes(fichier); i++)
 	{ 
 		auto livre = make_shared<Livre>();
-		fichier >> quoted(livre->titre);
+		string titre;
+		fichier >> quoted(titre);
+		cout << titre << endl;
 		fichier >> livre->anneeSortie;
+		cout << livre->anneeSortie << endl;
 		fichier >> quoted(livre->auteur);
+		cout << livre->auteur << endl;
 		fichier >> livre->ventes;
+		cout << livre->ventes << endl;
 		fichier >> livre->pages;
+		cout << livre->pages << endl;
 		biblio.push_back(livre);
 	}
 }
