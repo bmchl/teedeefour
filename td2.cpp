@@ -148,16 +148,7 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 	return film;
 }
 
-int lireNbLignes(ifstream& fichier)
-{
-	int nombreLignes = 0;
-	string ligne = "";
-	while (getline(fichier, ligne))
-	{
-		nombreLignes++;
-	}
-	return nombreLignes;
-}
+
 //shared_ptr<Livre> lireLivre(ifstream& fichier)
 //{
 //	auto livre = make_shared<Livre>();
@@ -172,20 +163,14 @@ int lireNbLignes(ifstream& fichier)
 void ajouterLivresBiblio(string nomFichier, vector<shared_ptr<Item>>& biblio)
 {
 	ifstream fichier(nomFichier);
-	for (int i = 0; i < lireNbLignes(fichier); i++)
+	while(!fichier.eof())
 	{ 
 		auto livre = make_shared<Livre>();
-		string titre;
-		fichier >> quoted(titre);
-		cout << titre << endl;
+		fichier >> quoted(livre->titre);
 		fichier >> livre->anneeSortie;
-		cout << livre->anneeSortie << endl;
 		fichier >> quoted(livre->auteur);
-		cout << livre->auteur << endl;
 		fichier >> livre->ventes;
-		cout << livre->ventes << endl;
 		fichier >> livre->pages;
-		cout << livre->pages << endl;
 		biblio.push_back(livre);
 	}
 }
@@ -218,10 +203,10 @@ void ListeFilms::detruire(bool possedeLesFilms)
 //]
 
 // Pour que l'affichage de Film fonctionne avec <<, il faut aussi modifier l'affichage de l'acteur pour avoir un ostream; l'énoncé ne demande pas que ce soit un opérateur, mais tant qu'à y être...
-ostream& operator<< (ostream& os, const Acteur& acteur)
-{
-	return os << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
-}
+//ostream& operator<< (ostream& os, const Acteur& acteur)
+//{
+//	return os << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
+//}
 
 // Fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
 //[
@@ -249,6 +234,16 @@ ostream& operator<< (ostream& os, const ListeFilms& listeFilms)
 	}
 	return os;
 }
+ostream& operator<< (ostream& os, const vector<shared_ptr<Item>> biblio)
+{
+	static const string ligneDeSeparation = //[
+		"\033[32m────────────────────────────────────────\033[0m\n";
+	os << ligneDeSeparation;
+	for (const shared_ptr<Item>& item : biblio) {
+		os << *item << ligneDeSeparation;
+	}
+	return os;
+}
 
 int main()
 {
@@ -266,14 +261,21 @@ int main()
 		biblio.push_back(make_shared<Film>(*film));
 	}
 	ajouterLivresBiblio("livres.txt", biblio);
+	//cout << ligneDeSeparation << endl;
+	//cout << biblio;
+	//cout << ligneDeSeparation << endl;
+
+	auto filmHobbit_p = biblio[4].get();
+	auto filmHobbit = dynamic_cast<Film*>(filmHobbit_p); // permet de convertir l'objet de type Item* extrait du vecteur biblio en objet de type Film*
+	auto livreHobbit_p = biblio[9].get();
+	auto livreHobbit = dynamic_cast<Livre*>(livreHobbit_p); // permet de convertir l'objet de type Item* extrait du vecteur biblio en objet de type Livre
+	FilmLivre hobbit(*filmHobbit, *livreHobbit);
+	biblio.push_back(make_shared<FilmLivre>(hobbit));
 	cout << ligneDeSeparation << endl;
-	for (auto item : biblio)
-	{
-		cout << item->titre << endl;
-	}
+	cout << "Voici la biblioteque complete:" << endl;
+	cout << biblio << endl;
+
 	// Détruire tout avant de terminer le programme.
 	listeFilms.detruire(true);
 	cout << ligneDeSeparation << endl;
-	Livre iBook("I, Justine", 2014, "Justine Ezarik", 999, 256);
-	cout << "real literature: " << iBook.titre << " by " << iBook.auteur << endl;
 }

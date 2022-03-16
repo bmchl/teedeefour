@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include <cassert>
+#include <iostream>
 #include "gsl/span"
 using gsl::span;
 using namespace std;
@@ -73,23 +74,41 @@ private:
 };
 using ListeActeurs = Liste<Acteur>;
 
-/* struct Film
+struct Acteur
 {
-	string titre, realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int anneeSortie=0, recette=0; // Année de sortie et recette globale du film en millions de dollars
-	ListeActeurs acteurs;
-}; */
+	string nom; int anneeNaissance = 0; char sexe = '\0';
+};
+ostream& operator<< (ostream& os, const Acteur& acteur)
+{
+	return os << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
+}
 
-class Item
+class Affichable
+{
+public:
+	virtual void afficher(ostream& o) const = 0;
+};
+
+class Item : public Affichable
 {
 public:
 	std::string titre = "";
 	int anneeSortie = 0;
 	Item() {};
 	Item(std::string titre, int annee) :titre(titre), anneeSortie(annee) {};
+	virtual void afficher(ostream& o) const
+	{
+		o << "Titre: " << titre << endl;
+		o << "  Annee de sortie: " << anneeSortie << endl;
+	};
 };
 
-class Livre : public Item
+ostream& operator<< (ostream& os, const Affichable& affichable)
+{
+	affichable.afficher(os);
+	return os;
+}
+class Livre : virtual public Item
 {
 public:
 	std::string auteur = "";
@@ -102,9 +121,20 @@ public:
 		ventes(ventes),
 		pages(pages)
 	{};
+	Livre(std::string auteur, int ventes, int pages) :
+		auteur(auteur),
+		ventes(ventes),
+		pages(pages)
+	{};
+	virtual void afficher(ostream& o) const
+	{
+		Item::afficher(o);
+		o << "  Auteur: " << auteur << endl;
+		o << "  Ventes: " << ventes << endl;
+		o << "  Pages: " << pages << endl;
+	};
 };
-
-class Film : public Item
+class Film : virtual public Item
 {
 public:
 	std::string realisateur = "";
@@ -113,10 +143,44 @@ public:
 
 	Film():Item() {};
 	Film(std::string titre, int anneeSortie, std::string realisateur, int recette, ListeActeurs acteurs) : Item(titre, anneeSortie), realisateur(realisateur), recette(recette), acteurs(acteurs) {};
-	friend ostream& operator<< (ostream& os, const Film& film);
+	Film( std::string realisateur, int recette, ListeActeurs acteurs) : realisateur(realisateur), recette(recette), acteurs(acteurs) {};
+	virtual void afficher(ostream& o) const
+	{
+		Item::afficher(o);
+		o << "  Realisateur: " << realisateur << endl;
+		o << "  Recette: " << recette << "M$" << endl;
+		o << "Acteurs:" << endl;
+		for (const shared_ptr<Acteur>& acteur : acteurs.enSpan())
+			o << *acteur;
+	};
 };
 
-struct Acteur
+class FilmLivre : public Film, public Livre
 {
-	string nom; int anneeNaissance = 0; char sexe = '\0';
+public:
+	FilmLivre(const Film& film, const Livre& livre) : 
+		Item(film.titre, film.anneeSortie),
+		Livre(livre.auteur, livre.pages, livre.ventes), 
+		Film(film.realisateur, film.recette, film.acteurs)
+	{};
+	virtual void afficher(ostream& o) const
+	{
+		Item::afficher(o);
+		o << "PARTIE FILM" << endl;
+		o << "  Realisateur: " << realisateur << endl;
+		o << "  Recette: " << recette << "M$" << endl;
+		o << "Acteurs:" << endl;
+		for (const shared_ptr<Acteur>& acteur : acteurs.enSpan())
+			o << *acteur;
+		o << "PARTIE LIVRE" << endl;
+		o << "  Auteur: " << auteur << endl;
+		o << "  Ventes: " << ventes << endl;
+		o << "  Pages: " << pages << endl;
+	};
 };
+
+ostream& operator<< (ostream& os, const FilmLivre& filmLivre)
+{
+	filmLivre.afficher(os);
+	return os;
+}
