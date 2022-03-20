@@ -148,29 +148,12 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 	return film;
 }
 
-
-//shared_ptr<Livre> lireLivre(ifstream& fichier)
-//{
-//	auto livre = make_shared<Livre>();
-//	fichier >> quoted(livre->titre);
-//	fichier >> livre->anneeSortie;
-//	fichier >> quoted(livre->auteur);
-//	fichier >> livre->ventes;
-//	fichier >> livre->pages;
-//	return livre;
-//}
-
 void ajouterLivresBiblio(string nomFichier, vector<shared_ptr<Item>>& biblio)
 {
 	ifstream fichier(nomFichier);
 	while(!fichier.eof())
 	{ 
-		auto livre = make_shared<Livre>();
-		fichier >> quoted(livre->titre);
-		fichier >> livre->anneeSortie;
-		fichier >> quoted(livre->auteur);
-		fichier >> livre->ventes;
-		fichier >> livre->pages;
+		auto livre = make_shared<Livre>(fichier);
 		biblio.push_back(livre);
 	}
 }
@@ -210,17 +193,17 @@ void ListeFilms::detruire(bool possedeLesFilms)
 
 // Fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
 //[
-ostream& operator<< (ostream& os, const Film& film)
-{
-	os << "Titre: " << film.titre << endl;
-	os << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
-	os << "  Recette: " << film.recette << "M$" << endl;
-
-	os << "Acteurs:" << endl;
-	for (const shared_ptr<Acteur>& acteur : film.acteurs.enSpan())
-		os << *acteur;
-	return os;
-}
+//ostream& operator<< (ostream& os, const Film& film)
+//{
+//	os << "Titre: " << film.titre << endl;
+//	os << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
+//	os << "  Recette: " << film.recette << "M$" << endl;
+//
+//	os << "Acteurs:" << endl;
+//	for (const shared_ptr<Acteur>& acteur : film.acteurs.enSpan())
+//		os << *acteur;
+//	return os;
+//}
 //]
 
 // Pas demandé dans l'énoncé de tout mettre les affichages avec surcharge, mais pourquoi pas.
@@ -261,18 +244,15 @@ int main()
 		biblio.push_back(make_shared<Film>(*film));
 	}
 	ajouterLivresBiblio("livres.txt", biblio);
-	//cout << ligneDeSeparation << endl;
-	//cout << biblio;
-	//cout << ligneDeSeparation << endl;
 
 	auto filmHobbit_p = biblio[4].get();
 	auto filmHobbit = dynamic_cast<Film*>(filmHobbit_p); // permet de convertir l'objet de type Item* extrait du vecteur biblio en objet de type Film*
 	auto livreHobbit_p = biblio[9].get();
-	auto livreHobbit = dynamic_cast<Livre*>(livreHobbit_p); // permet de convertir l'objet de type Item* extrait du vecteur biblio en objet de type Livre
+	auto livreHobbit = dynamic_cast<Livre*>(livreHobbit_p); // permet de convertir l'objet de type Item* extrait du vecteur biblio en objet de type Livre*
 	FilmLivre hobbit(*filmHobbit, *livreHobbit);
 	biblio.push_back(make_shared<FilmLivre>(hobbit));
 	cout << ligneDeSeparation << endl;
-	cout << "Voici la biblioteque complete:" << endl;
+	cout << "Voici la bibliotheque complete:" << endl;
 	cout << biblio << endl;
 
 	// Détruire tout avant de terminer le programme.

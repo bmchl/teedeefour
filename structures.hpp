@@ -8,6 +8,8 @@
 #include <functional>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include "gsl/span"
 using gsl::span;
 using namespace std;
@@ -126,6 +128,15 @@ public:
 		ventes(ventes),
 		pages(pages)
 	{};
+	Livre(ifstream& fichier)
+	{
+		fichier >> quoted(titre);
+		fichier >> anneeSortie;
+		fichier >> quoted(auteur);
+		fichier >> ventes;
+		fichier >> pages;
+		cout << "Création Livre " << titre << endl;
+	}
 	virtual void afficher(ostream& o) const
 	{
 		Item::afficher(o);
@@ -163,7 +174,7 @@ public:
 		Livre(livre.auteur, livre.pages, livre.ventes), 
 		Film(film.realisateur, film.recette, film.acteurs)
 	{};
-	virtual void afficher(ostream& o) const
+	virtual void afficher(ostream& o) const override
 	{
 		Item::afficher(o);
 		o << "PARTIE FILM" << endl;
@@ -178,9 +189,3 @@ public:
 		o << "  Pages: " << pages << endl;
 	};
 };
-
-ostream& operator<< (ostream& os, const FilmLivre& filmLivre)
-{
-	filmLivre.afficher(os);
-	return os;
-}
